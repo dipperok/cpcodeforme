@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Копирование кода</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Пример копирования кода</h1>
+    <div class="code-container">
+        <pre id="code-block">
+<code>
+    Sub UpdateMainList()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim currentDate As Date
+    Dim i As Long
+    Dim status As String
+    Dim agrDate As Date
+    Dim cityCode As String
+    Dim cities As Object
+    Const twoYearsDays As Long = 730
+
+    ' Инициализация словаря для кодов городов
+    Set cities = CreateObject("Scripting.Dictionary")
+    cities.Add "0001", "Москва"
+    cities.Add "0102", "Калуга"
+    cities.Add "0203", "Санкт-Петербург"
+    ' Добавьте сюда дополнительные города, как необходимо
+
+    Set ws = ActiveSheet
+
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    currentDate = Date
+
+    For i = 23 To lastRow
+        ' Получение статуса из колонки D
+        status = ws.Cells(i, 4).Value
+
+        ' Проверка и получение даты из колонки E
+        If IsDate(ws.Cells(i, 5).Value) Then
+            agrDate = ws.Cells(i, 5).Value
+        Else
+            agrDate = 0
+        End If
+
+        ' Изменение цвета строк на основе статуса
+        Select Case status
+            Case "Актуально"
+                ws.Range(ws.Cells(i, 1), ws.Cells(i, 11)).Interior.Color = RGB(226, 239, 218)
+            Case "Не_Актуально"
+                ws.Range(ws.Cells(i, 1), ws.Cells(i, 11)).Interior.Color = RGB(255, 242, 204)
+            Case "В_работе"
+                ws.Range(ws.Cells(i, 1), ws.Cells(i, 11)).Interior.Color = RGB(217, 225, 242)
+        End Select
+
+        ' Проверка срока действия для "Актуально"
+        If status = "Актуально" And agrDate <> 0 Then
+            If DateDiff("d", agrDate, currentDate) > twoYearsDays Then
+                ws.Cells(i, 4).Value = "Не_Актуально"
+                ws.Range(ws.Cells(i, 1), ws.Cells(i, 11)).Interior.Color = RGB(255, 242, 204)
+            End If
+        End If
+
+        ' Извлечение первых 4 символов из колонки A для определения города
+        cityCode = Left(ws.Cells(i, 1).Value, 4)
+        
+        ' Заполнение города в колонке G
+        If cities.exists(cityCode) Then
+            ws.Cells(i, 7).Value = cities(cityCode)
+        Else
+            ws.Cells(i, 7).Value = "Неизвестный город"
+        End If
+    Next i
+End Sub
+</code>
+        </pre>
+        <button id="copy-btn">Скопировать код</button>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
